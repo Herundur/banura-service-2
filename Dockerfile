@@ -11,7 +11,7 @@ COPY . .
 RUN npm run build
 
 # --- Stage 2: Runtime ---
-FROM node:23-alpine3.20-alpine
+FROM node:23-alpine3.20
 WORKDIR /app
 
 COPY package*.json ./
