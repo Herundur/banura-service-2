@@ -80,7 +80,6 @@ export default {
 			const collector = message.createMessageComponentCollector({ time: 30_000 }); // 30 seconds
 
 			collector.on('collect', async (i: any) => {
-
 				if (i.user.id !== interaction.user.id) {
 					await i.reply({ content: 'Du hast keine Berechtigung, mit diesen Buttons zu interagieren. Nur der Nutzer, der den Befehl ursprünglich ausgeführt hat, kann dies tun.', flags: MessageFlags.Ephemeral });
 					return;
@@ -119,10 +118,14 @@ export default {
 				collector.resetTimer();
 			});
 			
-			collector.on('end', (i: any) => {
-				if (messageData.isDeleted) return;
-				embed = createEmbed(messageData);
-				interaction.editReply({  embeds: [embed], components: [] });
+			collector.on('end', async (i: any) => {
+				try {
+					if (messageData.isDeleted) return;
+					embed = createEmbed(messageData);
+					await interaction.editReply({  embeds: [embed], components: [] });
+				} catch (err) {
+					LOGGER.warn("DiscordAPI hat versucht auf eine manuell gelöschte Message zuzugreifen:", err);
+				}
 			});
 
 		} catch (error) {
@@ -130,7 +133,7 @@ export default {
 			try {
 				await interaction.editReply({ content: 'Beim Suchen der Bilder ist ein Fehler aufgetreten.', flags: MessageFlags.Ephemeral });
 			} catch (err) {
-				LOGGER.error("Beim Senden der Fehlernachricht ist auch ein Fehler aufgetreten:", error);
+				LOGGER.error("Beim Senden der Fehlernachricht ist auch ein Fehler aufgetreten:", err);
 			}
 		}
 	}
