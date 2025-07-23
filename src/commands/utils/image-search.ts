@@ -237,7 +237,6 @@ export async function reactToPageModal(interaction: ModalSubmitInteraction) {
 		if (!interaction.message) return;
 
 		const messageData = messageDataMap.get(interaction.message.id);
-		messageData!.index = pageNumber - 1;
 
 		if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > messageData!.imageURLs.length) {
 			await interaction.reply({
@@ -246,6 +245,8 @@ export async function reactToPageModal(interaction: ModalSubmitInteraction) {
 			});
 			return;
 		}
+
+		messageData!.index = pageNumber - 1;
 
 		await interaction.deferUpdate();
 
