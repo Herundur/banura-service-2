@@ -39,15 +39,15 @@ for (const folder of commandFolders) {
 // Construct and prepare an instance of the REST module
 const rest = new REST().setToken(process.env.TOKEN!);
 
-// and deploy your commands!
+// ADD/UPDATE COMMANDS
 (async () => {
 	try {
 		LOGGER.info(`Started refreshing ${commands.length} application (/) commands.`);
 
 		// The put method is used to fully refresh all commands
 		const data: any = await rest.put(
-			Routes.applicationGuildCommands(process.env.CLIENT_ID!, process.env.GUILD_ID!),
-			//Routes.applicationCommands(process.env.CLIENT_ID!), Use this line to register commands globally when deploying, but be aware it can take up to an hour to propagate.
+			//Routes.applicationGuildCommands(process.env.CLIENT_ID!, process.env.MAIN_GUILD_ID!),
+			Routes.applicationCommands(process.env.CLIENT_ID!), // Use this line to register commands globally when deploying, but be aware it can take up to an hour to propagate.
 			{ body: commands },
 		);
 
@@ -56,3 +56,17 @@ const rest = new REST().setToken(process.env.TOKEN!);
 		LOGGER.error(error);
 	}
 })();
+
+
+// DELETE COMMANDS
+// for guild-based commands
+
+rest.delete(Routes.applicationGuildCommand(process.env.CLIENT_ID!, process.env.MAIN_GUILD_ID!, 'commandId (e.g 1035610894857687107)'))
+	.then(() => LOGGER.info('Successfully deleted guild command'))
+	.catch(error => LOGGER.error('Error deleting guild command:', error));
+
+// for global commands
+rest.delete(Routes.applicationCommand(process.env.CLIENT_ID!, 'commandId (e.g 1035610894857687107)'))
+	.then(() => LOGGER.info('Successfully deleted application command'))
+	.catch(error => LOGGER.error('Error deleting guild command:', error));
+	

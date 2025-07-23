@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Collection, GatewayIntentBits, Events, MessageFlags } from 'discord.js';
 import { CommandClient } from './types/client.js';
+import { reactToPageModal } from "./commands/utils/image-search.js";
 import LOGGER from "./config/logger.js";
 
 const client = new CommandClient({ intents: [GatewayIntentBits.Guilds] });
@@ -32,24 +33,28 @@ for (const folder of commandFolders) {
 }
 
 client.on(Events.InteractionCreate, async interaction => {
-    if (!interaction.isChatInputCommand()) return;
+	if (interaction.isChatInputCommand()) {
+		const interactionClient = interaction.client as CommandClient;
+		const command = interactionClient.commands.get(interaction.commandName);
 
-    const interactionClient = interaction.client as CommandClient;
-    const command = interactionClient.commands.get(interaction.commandName);
+		if (!command) {
+			LOGGER.error(`No command matching ${interaction.commandName} was found.`);
+			return;
+		}
 
-	if (!command) {
-		LOGGER.error(`No command matching ${interaction.commandName} was found.`);
-		return;
-	}
-
-	try {
-		await command.execute(interaction);
-	} catch (error) {
-		LOGGER.error(error);
-		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp({ content: 'Ein Fehler ist während dem Ausführen des Commands aufgetreten!', flags: MessageFlags.Ephemeral }); // Only visible to the user.
-		} else {
-			await interaction.reply({ content: 'Ein Fehler ist während dem Ausführen des Commands aufgetreten!', flags: MessageFlags.Ephemeral }); // Only visible to the user.
+		try {
+			await command.execute(interaction);
+		} catch (error) {
+			LOGGER.error(error);
+			if (interaction.replied || interaction.deferred) {
+				await interaction.followUp({ content: 'Ein Fehler ist während dem Ausführen des Commands aufgetreten!', flags: MessageFlags.Ephemeral }); // Only visible to the user.
+			} else {
+				await interaction.reply({ content: 'Ein Fehler ist während dem Ausführen des Commands aufgetreten!', flags: MessageFlags.Ephemeral }); // Only visible to the user.
+			}
+		}
+	} else if (interaction.isModalSubmit()) {
+		if (interaction.customId === 'pageNumberModal') {
+			reactToPageModal(interaction);
 		}
 	}
 });
