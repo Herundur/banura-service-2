@@ -121,6 +121,7 @@ export default {
 			collector.on('end', async (i: any) => {
 				try {
 					if (messageData.isDeleted) return;
+					messageData.isAccepted = true;
 					embed = createEmbed(messageData);
 					await interaction.editReply({  embeds: [embed], components: [] });
 				} catch (err) {
